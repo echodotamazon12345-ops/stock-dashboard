@@ -158,6 +158,7 @@ else:
 # Refresh Button
 # ----------------------
 if st.button("Refresh Prices"):
-    st.experimental_rerun()
+    st.rerun()
+
 
 
