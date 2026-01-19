@@ -102,6 +102,8 @@ def color_profit(val):
 
 if not table_df.empty:
     st.dataframe(table_df.style.applymap(lambda v: color_profit(v) if isinstance(v, (int,float)) else None, subset=["Profit/Loss"]))
+else:
+    st.info("📭 Your portfolio is empty. Add a stock to see the table!")
 
 # ----------------------
 # Stock Price Chart
@@ -109,18 +111,24 @@ if not table_df.empty:
 st.subheader("Stock Prices (Last 3 Months)")
 
 fig = go.Figure()
-for sym in table_df["Symbol"]:
-    try:
-        hist = yf.Ticker(sym).history(period="3mo")
-        fig.add_trace(go.Scatter(x=hist.index, y=hist["Close"], mode="lines", name=sym))
-    except:
-        continue
 
-fig.update_layout(title="Stock Prices", xaxis_title="Date", yaxis_title="Close Price", height=500)
-st.plotly_chart(fig, use_container_width=True)
+if not table_df.empty and "Symbol" in table_df.columns:
+    for sym in table_df["Symbol"]:
+        try:
+            hist = yf.Ticker(sym).history(period="3mo")
+            if not hist.empty:
+                fig.add_trace(go.Scatter(x=hist.index, y=hist["Close"], mode="lines", name=sym))
+        except Exception as e:
+            st.warning(f"Could not fetch data for {sym}: {e}")
+    fig.update_layout(title="Stock Prices", xaxis_title="Date", yaxis_title="Close Price", height=500)
+    st.plotly_chart(fig, use_container_width=True)
+else:
+    st.info("📭 Your portfolio is empty. Add a stock to see the chart!")
 
 # ----------------------
-# Optional Refresh Button
+# Refresh Button
 # ----------------------
 if st.button("Refresh Prices"):
     st.experimental_rerun()
+
+
